@@ -32,17 +32,17 @@ export default function Home() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
-      <h1 className="text-xl font-medium mb-6">Legal Matter Task Manager</h1>
+      <h1 className="text-xl font-medium mb-6">Task Manager</h1>
       
       <form onSubmit={createMatter} className="mb-6 flex gap-2">
         <input
           value={title}
           onChange={e => setTitle(e.target.value)}
-          placeholder="Matter title..."
+          placeholder="Enter matter..."
           className="flex-1 px-3 py-1.5 border rounded-md text-sm"
         />
         <button className="px-4 py-1.5 bg-white border text-gray-700 rounded-md text-sm hover:bg-gray-50 transition-colors">
-          Create Matter
+          Create
         </button>
       </form>
 
