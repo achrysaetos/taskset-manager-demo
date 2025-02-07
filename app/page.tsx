@@ -31,26 +31,26 @@ export default function Home() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-8">
-      <h1 className="text-2xl font-bold mb-8">Legal Matter Task Manager</h1>
+    <div className="max-w-3xl mx-auto px-4 py-6">
+      <h1 className="text-xl font-medium mb-6">Legal Matter Task Manager</h1>
       
-      <form onSubmit={createMatter} className="mb-8 flex gap-4">
+      <form onSubmit={createMatter} className="mb-6 flex gap-2">
         <input
           value={title}
           onChange={e => setTitle(e.target.value)}
           placeholder="Matter title..."
-          className="flex-1 px-4 py-2 border rounded"
+          className="flex-1 px-3 py-1.5 border rounded-md text-sm"
         />
-        <button className="px-6 py-2 bg-blue-500 text-white rounded">
+        <button className="px-4 py-1.5 bg-white border text-gray-700 rounded-md text-sm hover:bg-gray-50 transition-colors">
           Create Matter
         </button>
       </form>
 
       {[...matters].reverse().map(matter => (
-        <div key={matter.id} className="mb-8 border rounded-lg p-6 bg-gray-50">
-          <div className="mb-4">
-            <h2 className="text-xl font-bold">{matter.title}</h2>
-            <p className="text-sm text-gray-600">
+        <div key={matter.id} className="mb-4 border rounded-md p-4 bg-white shadow-sm">
+          <div className="mb-3">
+            <h2 className="text-lg font-medium">{matter.title}</h2>
+            <p className="text-xs text-gray-500">
               Created on {format(matter.createdAt, 'MMM d, yyyy')}
             </p>
           </div>

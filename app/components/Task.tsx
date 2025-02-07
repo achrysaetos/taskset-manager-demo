@@ -36,25 +36,27 @@ export function Task({ type, task, matter, onComplete }: TaskProps) {
   };
 
   return (
-    <div className="border p-4 mb-2 rounded bg-white">
-      <div className="flex justify-between mb-2">
-        <span className="font-medium">{type}</span>
-        <span className={task.completed ? "text-green-600" : "text-gray-500"}>
-          {task.completed ? "Completed" : "Pending"}
-        </span>
+    <div className="border-b last:border-b-0 py-3">
+      <div className="flex justify-between items-center">
+        <div>
+          <span className="text-sm font-medium">{type}</span>
+          <span className={`ml-2 text-xs ${task.completed ? "text-green-600" : "text-gray-400"}`}>
+            {task.completed ? "Completed" : "Pending"}
+          </span>
+          {error && <div className="text-red-500 text-xs mt-1">{error}</div>}
+        </div>
+        <button
+          onClick={handleClick}
+          disabled={task.completed}
+          className={`px-3 py-1 rounded-md text-xs transition-colors ${
+            task.completed 
+              ? "bg-gray-100 text-gray-400 cursor-default border border-gray-200" 
+              : "bg-white border text-gray-700 hover:bg-gray-50"
+          }`}
+        >
+          Complete
+        </button>
       </div>
-      {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
-      <button
-        onClick={handleClick}
-        disabled={task.completed}
-        className={`px-4 py-1 rounded text-sm ${
-          task.completed 
-            ? "bg-gray-100 text-gray-400" 
-            : "bg-blue-500 text-white"
-        }`}
-      >
-        Complete
-      </button>
     </div>
   );
 } 
