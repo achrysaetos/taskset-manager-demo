@@ -46,7 +46,7 @@ export default function Home() {
         </button>
       </form>
 
-      {matters.map(matter => (
+      {[...matters].reverse().map(matter => (
         <div key={matter.id} className="mb-8 border rounded-lg p-6 bg-gray-50">
           <div className="mb-4">
             <h2 className="text-xl font-bold">{matter.title}</h2>
