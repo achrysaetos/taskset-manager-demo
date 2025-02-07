@@ -5,19 +5,6 @@ export type TaskType =
   | 'Client Check-in'
   | 'Create Demand';
 
-export interface TimeDependency {
-  type: 'time';
-  taskId: string;
-  weeksRequired: number;
-}
-
-export interface TaskDependency {
-  type: 'task';
-  taskId: string;
-}
-
-export type Dependency = TimeDependency | TaskDependency;
-
 export interface Task {
   id: string;
   type: TaskType;
@@ -25,7 +12,11 @@ export interface Task {
   completed: boolean;
   completedAt?: Date;
   createdAt: Date;
-  dependencies: Dependency[];
+  requiredTasks: TaskType[];
+  timeRequirement?: {
+    afterTask: TaskType;
+    weeks: number;
+  };
 }
 
 export interface Matter {
@@ -35,50 +26,28 @@ export interface Matter {
   tasks: Task[];
 }
 
-export interface TaskDefinition {
-  type: TaskType;
-  dependencies: {
-    tasks?: TaskType[];
-    timeRequirements?: {
-      taskType: TaskType;
-      weeks: number;
-    }[];
-  };
-}
-
-export const TASK_DEFINITIONS: TaskDefinition[] = [
-  {
-    type: 'Intake Call',
-    dependencies: {},
+// Predefined task flow
+export const TASK_FLOW: Record<TaskType, { 
+  requiredTasks: TaskType[],
+  timeRequirement?: { afterTask: TaskType, weeks: number }
+}> = {
+  'Intake Call': {
+    requiredTasks: [],
   },
-  {
-    type: 'Sign Engagement Letter',
-    dependencies: {
-      tasks: ['Intake Call'],
+  'Sign Engagement Letter': {
+    requiredTasks: ['Intake Call'],
+  },
+  'Collect Medical Records': {
+    requiredTasks: ['Sign Engagement Letter'],
+  },
+  'Client Check-in': {
+    requiredTasks: ['Sign Engagement Letter'],
+    timeRequirement: {
+      afterTask: 'Intake Call',
+      weeks: 2,
     },
   },
-  {
-    type: 'Collect Medical Records',
-    dependencies: {
-      tasks: ['Sign Engagement Letter'],
-    },
+  'Create Demand': {
+    requiredTasks: ['Collect Medical Records'],
   },
-  {
-    type: 'Client Check-in',
-    dependencies: {
-      tasks: ['Sign Engagement Letter'],
-      timeRequirements: [
-        {
-          taskType: 'Intake Call',
-          weeks: 2,
-        },
-      ],
-    },
-  },
-  {
-    type: 'Create Demand',
-    dependencies: {
-      tasks: ['Collect Medical Records'],
-    },
-  },
-]; 
+}; 
