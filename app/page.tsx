@@ -1,57 +1,81 @@
 'use client';
 
 import { useState } from 'react';
-import { useStore } from './store';
-import { Matter } from './components/Matter';
+import { format } from 'date-fns';
+import { Matter, Task, TaskType, TASKS } from './types';
+import { Task as TaskComponent } from './components/Task';
 
 export default function Home() {
-  const [newMatterTitle, setNewMatterTitle] = useState('');
-  const { matters, createMatter } = useStore();
+  const [matters, setMatters] = useState<Matter[]>([]);
+  const [title, setTitle] = useState('');
 
-  const handleCreateMatter = (e: React.FormEvent) => {
+  const createMatter = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMatterTitle.trim()) return;
-    
-    createMatter(newMatterTitle.trim());
-    setNewMatterTitle('');
+    if (!title.trim()) return;
+
+    const now = new Date();
+    setMatters(prev => [...prev, {
+      id: Date.now(),
+      title: title.trim(),
+      createdAt: now,
+      tasks: Object.entries(TASKS).reduce((acc, [type, config]) => ({
+        ...acc,
+        [type]: {
+          ...config,
+          completed: false,
+          createdAt: now,
+        }
+      }), {} as Record<TaskType, Task>)
+    }]);
+    setTitle('');
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="max-w-4xl mx-auto py-8 px-4">
-        <h1 className="text-3xl font-bold mb-8">Legal Matter Task Manager</h1>
-        
-        <div className="bg-white rounded-lg p-6 mb-8 shadow-sm">
-          <h2 className="text-xl font-semibold mb-4">Create New Matter</h2>
-          <form onSubmit={handleCreateMatter} className="flex gap-4">
-            <input
-              type="text"
-              value={newMatterTitle}
-              onChange={(e) => setNewMatterTitle(e.target.value)}
-              placeholder="Enter matter title..."
-              className="flex-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <button
-              type="submit"
-              className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              Create Matter
-            </button>
-          </form>
-        </div>
+    <div className="max-w-4xl mx-auto p-8">
+      <h1 className="text-2xl font-bold mb-8">Legal Matter Task Manager</h1>
+      
+      <form onSubmit={createMatter} className="mb-8 flex gap-4">
+        <input
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          placeholder="Matter title..."
+          className="flex-1 px-4 py-2 border rounded"
+        />
+        <button className="px-6 py-2 bg-blue-500 text-white rounded">
+          Create Matter
+        </button>
+      </form>
 
-        <div className="space-y-6">
-          {matters.length === 0 ? (
-            <p className="text-center text-gray-500 py-8">
-              No matters yet. Create one to get started!
+      {matters.map(matter => (
+        <div key={matter.id} className="mb-8 border rounded-lg p-6 bg-gray-50">
+          <div className="mb-4">
+            <h2 className="text-xl font-bold">{matter.title}</h2>
+            <p className="text-sm text-gray-600">
+              Created on {format(matter.createdAt, 'MMM d, yyyy')}
             </p>
-          ) : (
-            matters.map(matter => (
-              <Matter key={matter.id} matter={matter} />
-            ))
-          )}
+          </div>
+          
+          {(Object.entries(matter.tasks) as [TaskType, Task][]).map(([type, task]) => (
+            <TaskComponent
+              key={type}
+              type={type}
+              task={task}
+              matter={matter}
+              onComplete={() => {
+                setMatters(prev => prev.map(m => 
+                  m.id === matter.id ? {
+                    ...m,
+                    tasks: {
+                      ...m.tasks,
+                      [type]: { ...task, completed: true, completedAt: new Date() }
+                    }
+                  } : m
+                ));
+              }}
+            />
+          ))}
         </div>
-      </div>
+      ))}
     </div>
   );
 }

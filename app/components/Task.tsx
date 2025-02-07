@@ -1,54 +1,59 @@
-import { Task as TaskType } from '../types';
-import { useStore } from '../store';
 import { useState } from 'react';
+import { addWeeks, isAfter } from 'date-fns';
+import { Task as TaskType, Matter, TaskType as TaskName } from '../types';
 
 interface TaskProps {
+  type: TaskName;
   task: TaskType;
+  matter: Matter;
+  onComplete: () => void;
 }
 
-export function Task({ task }: TaskProps) {
-  const [message, setMessage] = useState<string | null>(null);
-  const triggerTask = useStore(state => state.triggerTask);
+export function Task({ type, task, matter, onComplete }: TaskProps) {
+  const [error, setError] = useState<string>();
 
-  const handleTrigger = () => {
-    const result = triggerTask(task.matterId, task.id);
-    setMessage(result.message);
-    if (result.success) {
-      setTimeout(() => setMessage(null), 3000);
+  const handleClick = () => {
+    // Check required tasks
+    for (const req of task.requires) {
+      if (!matter.tasks[req].completed) {
+        setError(`${req} must be completed first`);
+        return;
+      }
     }
+
+    // Check time requirement
+    if (task.waitWeeks) {
+      const afterTask = matter.tasks[task.waitWeeks.after];
+      const requiredDate = addWeeks(afterTask.completedAt || afterTask.createdAt, task.waitWeeks.weeks);
+      if (!isAfter(new Date(), requiredDate)) {
+        setError(`${task.waitWeeks.weeks} weeks must pass after ${task.waitWeeks.after}`);
+        return;
+      }
+    }
+
+    onComplete();
+    setError(undefined);
   };
 
   return (
-    <div className="border rounded-lg p-4 mb-4 bg-white shadow-sm">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-lg font-semibold">{task.type}</h3>
-        <span className={`px-2 py-1 rounded text-sm ${
-          task.completed 
-            ? 'bg-green-100 text-green-800' 
-            : 'bg-gray-100 text-gray-800'
-        }`}>
-          {task.completed ? 'Completed' : 'Pending'}
+    <div className="border p-4 mb-2 rounded bg-white">
+      <div className="flex justify-between mb-2">
+        <span className="font-medium">{type}</span>
+        <span className={task.completed ? "text-green-600" : "text-gray-500"}>
+          {task.completed ? "Completed" : "Pending"}
         </span>
       </div>
-      
-      {message && (
-        <div className={`text-sm mb-2 ${
-          task.completed ? 'text-green-600' : 'text-red-600'
-        }`}>
-          {message}
-        </div>
-      )}
-
+      {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
       <button
-        onClick={handleTrigger}
+        onClick={handleClick}
         disabled={task.completed}
-        className={`mt-2 px-4 py-2 rounded-md text-sm ${
-          task.completed
-            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-            : 'bg-blue-500 text-white hover:bg-blue-600'
+        className={`px-4 py-1 rounded text-sm ${
+          task.completed 
+            ? "bg-gray-100 text-gray-400" 
+            : "bg-blue-500 text-white"
         }`}
       >
-        {task.completed ? 'Task Complete' : 'Trigger Task'}
+        Complete
       </button>
     </div>
   );

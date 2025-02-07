@@ -1,53 +1,30 @@
-export type TaskType = 
-  | 'Intake Call'
-  | 'Sign Engagement Letter'
-  | 'Collect Medical Records'
-  | 'Client Check-in'
-  | 'Create Demand';
+export type TaskType = 'Intake Call' | 'Sign Engagement Letter' | 'Collect Medical Records' | 'Client Check-in' | 'Create Demand';
 
-export interface Task {
-  id: string;
+export type Task = {
   type: TaskType;
-  matterId: string;
   completed: boolean;
   completedAt?: Date;
   createdAt: Date;
-  requiredTasks: TaskType[];
-  timeRequirement?: {
-    afterTask: TaskType;
-    weeks: number;
-  };
-}
+  requires: TaskType[];
+  waitWeeks?: { after: TaskType; weeks: number };
+};
 
-export interface Matter {
-  id: string;
+export type Matter = {
+  id: number;
   title: string;
   createdAt: Date;
-  tasks: Task[];
-}
+  tasks: Record<TaskType, Task>;
+};
 
-// Predefined task flow
-export const TASK_FLOW: Record<TaskType, { 
-  requiredTasks: TaskType[],
-  timeRequirement?: { afterTask: TaskType, weeks: number }
-}> = {
-  'Intake Call': {
-    requiredTasks: [],
+// Task definitions
+export const TASKS: Record<TaskType, Omit<Task, 'completed' | 'completedAt' | 'createdAt'>> = {
+  'Intake Call': { type: 'Intake Call', requires: [] },
+  'Sign Engagement Letter': { type: 'Sign Engagement Letter', requires: ['Intake Call'] },
+  'Collect Medical Records': { type: 'Collect Medical Records', requires: ['Sign Engagement Letter'] },
+  'Client Check-in': { 
+    type: 'Client Check-in', 
+    requires: ['Sign Engagement Letter'],
+    waitWeeks: { after: 'Intake Call', weeks: 2 }
   },
-  'Sign Engagement Letter': {
-    requiredTasks: ['Intake Call'],
-  },
-  'Collect Medical Records': {
-    requiredTasks: ['Sign Engagement Letter'],
-  },
-  'Client Check-in': {
-    requiredTasks: ['Sign Engagement Letter'],
-    timeRequirement: {
-      afterTask: 'Intake Call',
-      weeks: 2,
-    },
-  },
-  'Create Demand': {
-    requiredTasks: ['Collect Medical Records'],
-  },
+  'Create Demand': { type: 'Create Demand', requires: ['Collect Medical Records'] }
 }; 
